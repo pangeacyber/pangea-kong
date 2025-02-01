@@ -6,7 +6,7 @@
     {
       "host": "api.openai.com",
       "endpoint": "/v1/chat/completions",
-      "protocols": ["https"],
+      "protocols": [],
       "ports": [],
       "audit_values": {
         "model": ""
@@ -32,7 +32,7 @@
     },
     {
       "host": "localhost",
-      "endpoint": "/",
+      "endpoint": "/v1/chat/completions",
       "audit_values": {
         "model": ""
       },

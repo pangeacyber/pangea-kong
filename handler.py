@@ -162,11 +162,20 @@ class Plugin:
                 k.log.debug(f"No work for 'request', allowing")
                 return
             text = k.request.get_raw_body()
-            response = self.ai_guard.guard_text(str(text), recipe=op.recipe)
+            try:
+                messages = json.loads(text)
+                response = self.ai_guard.guard_text(messages=messages, recipe=op.recipe)
+            except json.JSONDecodeError as e:
+                response = self.ai_guard.guard_text(str(text), recipe=op.recipe)
+
             if response.http_status != 200:
                 k.log.err(f"Failed to call AI Guard: {response.status_code}, {response.text}")
                 return
             new_prompt = response.json["result"].get("prompt_text")
+            if not new_prompt:
+                new_prompt = json.dumps(response.json["result"].get("prompt_messages"))
+            else:
+                new_prompt = str(new_prompt)
             blocked = response.json["result"].get("blocked", False)
             if blocked:
                 for name, result in response.json["result"]["detectors"].items():
