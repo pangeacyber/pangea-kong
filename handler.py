@@ -25,7 +25,8 @@ DEFAULT_PANGEA_DOMAIN = "aws.us.pangea.cloud"
 class Operation:
     def __init__(self, op_params: dict):
         self.json = op_params
-        self.recipe = op_params.get("recipe", "pangea_prompt_guard")
+        if "recipe" not in self.json:
+            self.json["recipe"] = "pangea_prompt_guard"
 
 
 class Rule:
@@ -33,12 +34,18 @@ class Rule:
         self.rule = rule
         self.host = rule.get("host")
         self.endpoint = rule.get("endpoint")
+        self.prefix = rule.get("prefix")
         self.protos = rule.get("protocols")
         self.ports = rule.get("ports")
-        self.recipe = rule.get("recipe")
+        self.allow_failure = rule.get("allow_on_error", False)
+        self.llm_info = rule.get("llm_info")
 
-    def match(self, host, endpoint, port, protocol) -> bool:
-        if host != self.host or endpoint != self.endpoint:
+    def match(self, host, endpoint, port, protocol, prefix) -> bool:
+        if host != self.host:
+            return False
+        if self.endpoint and endpoint != self.endpoint:
+            return False
+        if self.prefix and prefix != self.prefix:
             return False
         if self.protos and protocol not in self.protos:
             return False
@@ -50,7 +57,7 @@ class Rule:
         svc = self.rule.get(service)
         if not svc:
             return None
-        info = svc.get(op)
+        info = svc.get(op, {}).get("parameters")
         if info is None or not info.get("enabled", True):
             return None
         return Operation(info)
@@ -66,32 +73,39 @@ class PangeaKongConfig:
         self.rules: t.List[Rule] = []
         for i, rule in enumerate(rules):
             if not rule.get("host"):
-                kong.kong.log.warn(f"Rule {i} is missing the host, host and endpoint are required. Ignoring rule")
+                kong.kong.log.warn(f"Rule {i} is missing the host which is required. Ignoring rule")
                 continue
-            if not rule.get("endpoint"):
-                kong.kong.log.warn(f"Rule {i} is missing the host, host and endpoint are required. Ignoring rule")
+            endpoint = rule.get("endpoint")
+            prefix = rule.get("prefix")
+            if not endpoint or not prefix:
+                kong.kong.log.warn(f"Rule {i} is missing the endpoint or forwarding prefix, at least one is required. Ignoring rule")
                 continue
             self.rules.append(Rule(rule))
 
     def match_rule(self, k: kong.kong) -> t.Optional[Rule]:
-        proto, err = k.request.get_scheme()
+        proto, err = k.request.get_forwarded_scheme()
         if err:
             k.log.err(f"failed to get scheme: {err}")
             return
-        host, err = k.request.get_host()
+        host, err = k.request.get_forwarded_host()
         if err:
             k.log.err(f"failed to get host: {err}")
             return
-        port, err = k.request.get_port()
+        port, err = k.request.get_forwarded_port()
         if err:
             k.log.err(f"failed to get port: {err}")
             return
-        endpoint, err = k.request.get_path()
+        endpoint, err = k.request.get_forwarded_path()
         if err:
             k.log.err(f"failed to get endpoint: {err}")
             return
+        prefix, err = k.request.get_forwarded_prefix()
+        if err:
+            prefix = None
+        if prefix and endpoint.startswith(prefix):
+            endpoint = endpoint[len(prefix):]
         for rule in self.rules:
-            if rule.match(host, endpoint, port, proto):
+            if rule.match(host, endpoint, port, proto, prefix):
                 return rule
 
 
@@ -115,12 +129,13 @@ default_config = {
     {
       "host": "api.openai.com",
       "endpoint": "/v1/chat/completions",
+      # "prefix": "/a_prefix",
+      "allow_on_error": False,
       "protocols": ["https"],
       "ports": ["443"],
       "audit_values": {
         "model": "openai"
       },
-      "format": "openai",
       "ai_guard": {
         "request": {
           "parameters": {
@@ -152,21 +167,40 @@ class Plugin:
         self.ai_guard = AIGuard(token, config=PangeaConfig(**kwargs))
 
     def access(self, k: kong.kong):
+        allow_failure = True
         try:
             rule = config.match_rule(k)
             if not rule:
                 k.log.debug(f"No rule matched {k.request.get_host()}{k.request.get_path()}, allowing")
                 return
+            allow_failure = rule.allow_failure is True
             op = rule.operation_params("request")
             if op is None:
                 k.log.debug(f"No work for 'request', allowing")
                 return
-            text = k.request.get_raw_body()
+            k.log.debug(f"OP: {json.dumps(op.json)}")
+            recipe = k.request.get_header('x-pangea-aig-recipe')
+            if recipe and recipe[0]:
+                # it comes in an array
+                recipe = recipe[0]
+                op.json["recipe"] = recipe
+            text, err = k.request.get_raw_body()
+            if err:
+                k.log.err(f"Got error when getting request raw body: '{err}'")
             try:
+                if isinstance(text, bytes):
+                    text = text.decode("utf8")
                 messages = json.loads(text)
-                response = self.ai_guard.guard_text(messages=messages, recipe=op.recipe)
-            except json.JSONDecodeError as e:
-                response = self.ai_guard.guard_text(str(text), recipe=op.recipe)
+                if llm_info := rule.llm_info:
+                    op.json["llm_info"] = llm_info
+                    k.log.debug(f"PARAMS: {json.dumps(op.json)}")
+                    response = self.ai_guard.guard_text(llm_input=messages, **op.json)
+                else:
+                    response = self.ai_guard.guard_text(messages=messages, **op.json)
+            except (json.JSONDecodeError, TypeError) as e:
+                k.log.debug(f"JSON parse failed: {str(e)}")
+                k.log.debug(f"JSON parse failed: {repr(text)}")
+                response = self.ai_guard.guard_text(str(text), **op.json)
 
             if response.http_status != 200:
                 k.log.err(f"Failed to call AI Guard: {response.status_code}, {response.text}")
@@ -181,13 +215,15 @@ class Plugin:
                 for name, result in response.json["result"]["detectors"].items():
                     if result.get("detected", False):
                         k.log.warn(f"Detected unwanted prompt characteristics: {name}, {json.dumps(response.json)}")
-                        return k.response.error(400, "Prompt has been rejected", {"Content-Type": "text/html"})
+                        return k.response.error(400, f"Prompt has been rejected: {response.json['summary']}", {"Content-Type": "text/html"})
             else:
                 k.log.debug(f"Prompt allowed: {json.dumps(response.json)}")
                 if new_prompt:
                     k.service.request.set_raw_body(new_prompt)
         except Exception as e:
             k.log.err(f"Exception while trying to call AI Guard:\n {format_exception(e)}")
+            if not allow_failure:
+                k.response.error(400, "Prompt has been rejected", {"Content-Type": "text/html"})
 
 
 # for running in a dedicated process
