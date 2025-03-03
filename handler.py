@@ -10,6 +10,7 @@ import kong_pdk.pdk.kong as kong
 
 from pangea import PangeaConfig
 from pangea.services.ai_guard import AIGuard
+from pangea_translator import get_translator
 
 token = os.getenv("PANGEA_AI_GUARD_TOKEN", "")
 
@@ -37,8 +38,8 @@ class Rule:
         self.prefix = rule.get("prefix")
         self.protos = rule.get("protocols")
         self.ports = rule.get("ports")
+        self.parser = rule.get("parser")
         self.allow_failure = rule.get("allow_on_error", False)
-        self.llm_info = rule.get("llm_info")
 
     def match(self, host, endpoint, port, protocol, prefix) -> bool:
         if host != self.host:
@@ -167,7 +168,7 @@ class Plugin:
         self.ai_guard = AIGuard(token, config=PangeaConfig(**kwargs))
 
     def access(self, k: kong.kong):
-        allow_failure = True
+        allow_failure = False
         try:
             rule = config.match_rule(k)
             if not rule:
@@ -187,16 +188,18 @@ class Plugin:
             text, err = k.request.get_raw_body()
             if err:
                 k.log.err(f"Got error when getting request raw body: '{err}'")
+            translator = None
             try:
                 if isinstance(text, bytes):
                     text = text.decode("utf8")
-                messages = json.loads(text)
-                if llm_info := rule.llm_info:
-                    op.json["llm_info"] = llm_info
+                payload = json.loads(text)
+                if rule.parser:
                     k.log.debug(f"PARAMS: {json.dumps(op.json)}")
-                    response = self.ai_guard.guard_text(llm_input=messages, **op.json)
+                    translator = get_translator(payload, llm_hint=rule.parser)
+                    pangea_messages = translator.get_pangea_messages()
+                    response = self.ai_guard.guard_text(messages=pangea_messages.messages, **op.json)
                 else:
-                    response = self.ai_guard.guard_text(messages=messages, **op.json)
+                    response = self.ai_guard.guard_text(messages=payload, **op.json)
             except (json.JSONDecodeError, TypeError) as e:
                 k.log.debug(f"JSON parse failed: {str(e)}")
                 k.log.debug(f"JSON parse failed: {repr(text)}")
@@ -204,12 +207,19 @@ class Plugin:
 
             if response.http_status != 200:
                 k.log.err(f"Failed to call AI Guard: {response.status_code}, {response.text}")
-                return
+                raise Exception("Failed to call AI Guard")
+
             new_prompt = response.json["result"].get("prompt_text")
             if not new_prompt:
-                new_prompt = json.dumps(response.json["result"].get("prompt_messages"))
+                new_prompt = response.json["result"].get("prompt_messages")
+                if rule.parser and translator:
+                    k.log.debug(f"NEW MESSAGES: {json.dumps(new_prompt)}")
+                    new_prompt = translator.transformed_original_input(messages=new_prompt)
+
+                new_prompt = json.dumps(new_prompt)
             else:
                 new_prompt = str(new_prompt)
+
             blocked = response.json["result"].get("blocked", False)
             if blocked:
                 for name, result in response.json["result"]["detectors"].items():
