@@ -68,6 +68,7 @@ class PangeaKongConfig:
     def __init__(self, j: dict):
         self.domain = j.get("pangea_domain")
         self.insecure = j.get("insecure", False)
+        self.header_recipe_map = j.get("headers", {})
         if not self.domain:
             self.domain = DEFAULT_PANGEA_DOMAIN
         rules = j.get("rules", [])
@@ -179,16 +180,36 @@ class Plugin:
             if op is None:
                 k.log.debug(f"No work for 'request', allowing")
                 return
-            k.log.debug(f"OP: {json.dumps(op.json)}")
-            recipe = k.request.get_header('x-pangea-aig-recipe')
+
+            # recipe is in the config, but can be overridden by this header
+            recipe = k.request.get_header("x-pangea-aig-recipe")
             if recipe and recipe[0]:
                 # it comes in an array
                 recipe = recipe[0]
+            else:
+                recipe = None
+            # can be further overridden by the configured header/recipe map
+            for header_name, recipe_map in config.header_recipe_map.items():
+                header_name = header_name.lower()
+                header = k.request.get_header(header_name)
+                if not header:
+                    continue
+                else:
+                    header = header[0]
+                if header in recipe_map:
+                    recipe = recipe_map[header]
+            if recipe:
                 op.json["recipe"] = recipe
+
             text, err = k.request.get_raw_body()
             if err:
                 k.log.err(f"Got error when getting request raw body: '{err}'")
             translator = None
+            log_fields = {
+                "model": f'{{"provider": "{rule.parser}"}}',
+                "extra_info": f'{{"api": "{k.request.get_forwarded_path()[0]}"}}',
+            }
+            op.json["log_fields"] = log_fields
             try:
                 if isinstance(text, bytes):
                     text = text.decode("utf8")
@@ -196,6 +217,10 @@ class Plugin:
                 if rule.parser:
                     k.log.debug(f"PARAMS: {json.dumps(op.json)}")
                     translator = get_translator(payload, llm_hint=rule.parser)
+                    model, model_version = translator.get_model_and_version()
+                    if not model_version:
+                        model_version = "null"
+                    log_fields["model"] = f'{{"provider": "{rule.parser}", "model": "{model}", "version": {model_version}}}'
                     pangea_messages = translator.get_pangea_messages()
                     response = self.ai_guard.guard_text(messages=pangea_messages.messages, **op.json)
                 else:
@@ -213,7 +238,6 @@ class Plugin:
             if not new_prompt:
                 new_prompt = response.json["result"].get("prompt_messages")
                 if rule.parser and translator:
-                    k.log.debug(f"NEW MESSAGES: {json.dumps(new_prompt)}")
                     new_prompt = translator.transformed_original_input(messages=new_prompt)
 
                 new_prompt = json.dumps(new_prompt)

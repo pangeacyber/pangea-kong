@@ -3,40 +3,9 @@
   "ignore_pangea_domain": "host.docker.internal:8000",
   "insecure": false,
   "headers": {
-    "apikey": {
-      "12345": {"foo":  "pangea_prompt_guard"}
-    }
+    "X-Custom-Header": {"abc123":  "pangea_prompt_guard_clone"}
   },
   "rules": [
-    {
-      "host": "api.openai.com",
-      "endpoint": "/v1/chat/completions",
-      "prefix": "/chatgpt/dev",
-      "allow_on_error": false,
-      "protocols": [],
-      "ports": [],
-      "audit_values": {
-        "model": ""
-      },
-      "format": "openai",
-      "ai_guard": {
-        "request": {
-          "enabled": true,
-          "config_id": "",
-          "parameters": {
-            "recipe": "",
-            "overrides": {
-              "prompt_injection": "",
-              "ip_address_action": "",
-              "url_address_action": "",
-              "domain_address_action": ""
-            }
-          }
-        },
-        "response": {
-        }
-      }
-    },
     {
       "host": "localhost",
       "endpoint": "/v1/chat/completions",
@@ -60,14 +29,7 @@
       "ai_guard": {
         "request": {
           "parameters": {
-            "recipe": "pangea_prompt_guard_clone",
-            "log_fields": {
-              "model": "{\"model\": \"gpt-3.5-turbo\", \"version\": 3.5}",
-              "citations": "cite",
-              "extra_info": "this is a test",
-              "source": "mysource",
-              "tools": "{\"gw\": \"pangea-kong\"}"
-            }
+            "recipe": "pangea_prompt_guard_clone"
           }
         }
       }
