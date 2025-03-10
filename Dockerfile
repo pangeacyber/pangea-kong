@@ -1,7 +1,7 @@
 FROM kong
 USER root
 RUN apt-get update && apt-get install -y python3 python3-pip musl-dev libffi-dev gcc g++ file make && \
-   pip3 install kong-pdk pangea-sdk==5.5.0b2 pangea-llm-translator==1.0.2 --break-system-packages 
+   pip3 install kong-pdk pangea-sdk==5.5.0b4 pangea-llm-translator==1.0.2 --break-system-packages 
 COPY handler.py /py-plugins/pangea_kong/
 COPY pangea_kong_config.json /py-plugins/pangea_kong/
 RUN chmod a+x /py-plugins/pangea_kong/handler.py
