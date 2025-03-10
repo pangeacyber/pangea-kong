@@ -1,0 +1,1 @@
+docker build --no-cache . --tag kong_plugin 

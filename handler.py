@@ -88,19 +88,19 @@ class PangeaKongConfig:
         proto, err = k.request.get_forwarded_scheme()
         if err:
             k.log.err(f"failed to get scheme: {err}")
-            return
+            return None
         host, err = k.request.get_forwarded_host()
         if err:
             k.log.err(f"failed to get host: {err}")
-            return
+            return None
         port, err = k.request.get_forwarded_port()
         if err:
             k.log.err(f"failed to get port: {err}")
-            return
+            return None
         endpoint, err = k.request.get_forwarded_path()
         if err:
             k.log.err(f"failed to get endpoint: {err}")
-            return
+            return None
         prefix, err = k.request.get_forwarded_prefix()
         if err:
             prefix = None
@@ -110,6 +110,7 @@ class PangeaKongConfig:
             if rule.match(host, endpoint, port, proto, prefix):
                 return rule
 
+        return None
 
 def load_config():
     loc = os.getenv("PANGEA_KONG_CONFIG_FILE")
