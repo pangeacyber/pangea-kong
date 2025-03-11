@@ -29,7 +29,4 @@ ENV KONG_DECLARATIVE_CONFIG_STRING='{"_format_version":"1.1", "services":[{"name
 # For local testing with a service running on host.docker.internal
 # ENV KONG_DECLARATIVE_CONFIG_STRING='{"_format_version":"1.1", "services":[{"name":"test_service_local","host":"host.docker.internal","port":8080,"protocol":"http", "routes":[{"name":"openairoutes","paths":["/chatgpt/user", "/chatgpt/dev"]}]}],"plugins":[{"name":"pangea_kong"}]}'
 
-# populate token in environment ENV PANGEA_AI_GUARD_TOKEN=
-ENV PANGEA_AI_GUARD_TOKEN=pts_e3hb34yxgjosqtljkq7u4fidofhtr4nx
-
 CMD ["kong", "docker-start"]
