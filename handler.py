@@ -25,7 +25,7 @@ DEFAULT_PANGEA_DOMAIN = "aws.us.pangea.cloud"
 
 class Operation:
     def __init__(self, op_params: dict):
-        self.json = op_params
+        self.json = op_params.copy()
         if "recipe" not in self.json:
             self.json["recipe"] = "pangea_prompt_guard"
 
