@@ -12,8 +12,19 @@ from pangea import PangeaConfig
 from pangea.services.ai_guard import AIGuard
 from pangea_translator import get_translator
 
-token_secret = os.getenv("PANGEA_AI_GUARD_TOKEN", "")
-with open(token_secret) as f: token = f.read()
+
+# Read PANGEA_AI_GUARD_TOKEN from env var
+token = os.getenv("PANGEA_AI_GUARD_TOKEN")
+
+# In case it's using docker secrets, set the env var PANGEA_AI_GUARD_TOKEN with its value
+token_secret = os.getenv("PANGEA_AI_GUARD_TOKEN_SECRET")
+if not token and token_secret:
+    with open(token_secret) as f:
+        os.environ['PANGEA_AI_GUARD_TOKEN'] = f.read()
+        token = os.getenv("PANGEA_AI_GUARD_TOKEN")
+
+if not token:
+    raise Exception("PANGEA_AI_GUARD_TOKEN or PANGEA_AI_GUARD_TOKEN_SECRET environment variables are required")
 
 Schema = (
     {"message": {"type": "string"}},
