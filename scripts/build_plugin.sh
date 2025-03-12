@@ -1,1 +1,1 @@
-docker build --no-cache . --tag kong_plugin 
+docker build --no-cache . --tag pangea_kong_plugin 
