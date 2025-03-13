@@ -1,10 +1,6 @@
 {
   "pangea_domain": "dev.aws.pangea.cloud",
-  "ignore_pangea_domain": "host.docker.internal:8000",
   "insecure": false,
-  "headers": {
-    "X-Custom-Header": {"abc123":  "pangea_prompt_guard_clone"}
-  },
   "rules": [
     {
       "host": "localhost",
