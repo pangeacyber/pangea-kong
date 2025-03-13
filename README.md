@@ -18,10 +18,6 @@ This repository provides integrations for network-related functionalities within
 
 ## Kong API Gateway Integration
 
-### Repository
-
-[GitHub - pangeacyber/pangea-kong](https://github.com/pangeacyber/pangea-kong)
-
 ### Build
 ```sh
 docker build --no-cache . --tag kong_plugin
@@ -53,7 +49,7 @@ For more information:
 - [Set up data store - Kong Gateway v3.9.x](https://docs.konghq.com/gateway/latest/kong-enterprise/datastore/)
 - [Install Kong Gateway on Docker - v3.9.x](https://docs.konghq.com/gateway/latest/install/docker/)
 
-### Useful Tests
+### Test
 
 ```sh
 curl http://localhost:8010/chatgpt/dev/v1/chat/completions \
@@ -70,10 +66,6 @@ curl http://localhost:8010/chatgpt/dev/v1/chat/completions \
 
 ## LiteLLM Integration
 
-### Repository
-
-[GitHub - pangeacyber/pangea-litellm](https://github.com/pangeacyber/pangea-litellm)
-
 ### Build
 ```sh
 docker build --no-cache . --tag litellm_plugin
@@ -84,7 +76,7 @@ docker build --no-cache . --tag litellm_plugin
 docker run -d -it -p 4000:4000 -p 8011:8001 -p 8012:8002 litellm_plugin
 ```
 
-### Useful Tests
+### Test
 
 ```sh
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
