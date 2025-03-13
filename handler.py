@@ -12,7 +12,19 @@ from pangea import PangeaConfig
 from pangea.services.ai_guard import AIGuard
 from pangea_translator import get_translator
 
-token = os.getenv("PANGEA_AI_GUARD_TOKEN", "")
+
+# Read PANGEA_AI_GUARD_TOKEN from env var
+token = os.getenv("PANGEA_AI_GUARD_TOKEN")
+
+# In case it's using docker secrets, set the env var PANGEA_AI_GUARD_TOKEN with its value
+token_secret = os.getenv("PANGEA_AI_GUARD_TOKEN_SECRET")
+if not token and token_secret:
+    with open(token_secret) as f:
+        os.environ['PANGEA_AI_GUARD_TOKEN'] = f.read()
+        token = os.getenv("PANGEA_AI_GUARD_TOKEN")
+
+if not token:
+    raise Exception("PANGEA_AI_GUARD_TOKEN or PANGEA_AI_GUARD_TOKEN_SECRET environment variables are required")
 
 Schema = (
     {"message": {"type": "string"}},
@@ -25,7 +37,7 @@ DEFAULT_PANGEA_DOMAIN = "aws.us.pangea.cloud"
 
 class Operation:
     def __init__(self, op_params: dict):
-        self.json = op_params
+        self.json = op_params.copy()
         if "recipe" not in self.json:
             self.json["recipe"] = "pangea_prompt_guard"
 
@@ -42,6 +54,7 @@ class Rule:
         self.allow_failure = rule.get("allow_on_error", False)
 
     def match(self, host, endpoint, port, protocol, prefix) -> bool:
+        # TODO: Should we check for empty hosts?
         if host != self.host:
             return False
         if self.endpoint and endpoint != self.endpoint:
@@ -59,7 +72,7 @@ class Rule:
         if not svc:
             return None
         info = svc.get(op, {}).get("parameters")
-        if info is None or not info.get("enabled", True):
+        if info is None or info.get("enabled", True) is not True:
             return None
         return Operation(info)
 
@@ -67,20 +80,22 @@ class Rule:
 class PangeaKongConfig:
     def __init__(self, j: dict):
         self.domain = j.get("pangea_domain")
-        self.insecure = j.get("insecure", False)
-        self.header_recipe_map = j.get("headers", {})
         if not self.domain:
             self.domain = DEFAULT_PANGEA_DOMAIN
+        self.insecure = j.get("insecure", False)
+        self.header_recipe_map = j.get("headers", {})
         rules = j.get("rules", [])
         self.rules: t.List[Rule] = []
         for i, rule in enumerate(rules):
             if not rule.get("host"):
-                kong.kong.log.warn(f"Rule {i} is missing the host which is required. Ignoring rule")
+                # FIXME: Logger is not initialized yet
+                # kong.kong.log.warn(f"Rule {i} is missing the host which is required. Ignoring rule")
                 continue
             endpoint = rule.get("endpoint")
             prefix = rule.get("prefix")
             if not endpoint or not prefix:
-                kong.kong.log.warn(f"Rule {i} is missing the endpoint or forwarding prefix, at least one is required. Ignoring rule")
+                # FIXME: Logger is not initialized yet
+                # kong.kong.log.warn(f"Rule {i} is missing the endpoint or forwarding prefix, at least one is required. Ignoring rule")
                 continue
             self.rules.append(Rule(rule))
 
@@ -88,19 +103,19 @@ class PangeaKongConfig:
         proto, err = k.request.get_forwarded_scheme()
         if err:
             k.log.err(f"failed to get scheme: {err}")
-            return
+            return None
         host, err = k.request.get_forwarded_host()
         if err:
             k.log.err(f"failed to get host: {err}")
-            return
+            return None
         port, err = k.request.get_forwarded_port()
         if err:
             k.log.err(f"failed to get port: {err}")
-            return
+            return None
         endpoint, err = k.request.get_forwarded_path()
         if err:
             k.log.err(f"failed to get endpoint: {err}")
-            return
+            return None
         prefix, err = k.request.get_forwarded_prefix()
         if err:
             prefix = None
@@ -110,18 +125,20 @@ class PangeaKongConfig:
             if rule.match(host, endpoint, port, proto, prefix):
                 return rule
 
+        return None
 
-def load_config():
+
+def load_config() -> PangeaKongConfig:
+    # FIXME: Check how to log file information. kong.log is not initialized yet
     loc = os.getenv("PANGEA_KONG_CONFIG_FILE")
-    if not loc:
-        pth = pathlib.Path(__file__).parent / "pangea_kong_config.json"
-    else:
+    if loc:
         pth = pathlib.Path(loc)
-    if pth.exists():
+    else:
+        pth = pathlib.Path("/etc/pangea_kong_config.json")
+    if pth.is_file():
         json_config = json.load(open(pth))
         return PangeaKongConfig(json_config)
     else:
-        kong.kong.log.warn(f"No config provided, using default")
         return PangeaKongConfig(default_config)
 
 
@@ -129,9 +146,8 @@ default_config = {
   "pangea_domain": DEFAULT_PANGEA_DOMAIN,
   "rules": [
     {
-      "host": "api.openai.com",
+      "host": "localhost",
       "endpoint": "/v1/chat/completions",
-      # "prefix": "/a_prefix",
       "allow_on_error": False,
       "protocols": ["https"],
       "ports": ["443"],
@@ -177,10 +193,12 @@ class Plugin:
                 return
             allow_failure = rule.allow_failure is True
             op = rule.operation_params("request")
+            k.log.debug(f"Rule op: {json.dumps(op.json)}")
             if op is None:
                 k.log.debug(f"No work for 'request', allowing")
                 return
 
+            k.log.debug(f"Request headers: {k.request.get_headers()}")
             # recipe is in the config, but can be overridden by this header
             recipe = k.request.get_header("x-pangea-aig-recipe")
             if recipe and recipe[0]:
@@ -189,15 +207,15 @@ class Plugin:
             else:
                 recipe = None
             # can be further overridden by the configured header/recipe map
-            for header_name, recipe_map in config.header_recipe_map.items():
-                header_name = header_name.lower()
-                header = k.request.get_header(header_name)
-                if not header:
-                    continue
-                else:
-                    header = header[0]
-                if header in recipe_map:
-                    recipe = recipe_map[header]
+            # for header_name, recipe_map in config.header_recipe_map.items():
+            #     header_name = header_name.lower()
+            #     header = k.request.get_header(header_name)
+            #     if not header:
+            #         continue
+            #     else:
+            #         header = header[0]
+            #     if header in recipe_map:
+            #         recipe = recipe_map[header]
             if recipe:
                 op.json["recipe"] = recipe
 
@@ -214,8 +232,8 @@ class Plugin:
                 if isinstance(text, bytes):
                     text = text.decode("utf8")
                 payload = json.loads(text)
+                k.log.debug(f"PARAMS: {json.dumps(op.json)}")
                 if rule.parser:
-                    k.log.debug(f"PARAMS: {json.dumps(op.json)}")
                     translator = get_translator(payload, llm_hint=rule.parser)
                     model, model_version = translator.get_model_and_version()
                     if not model_version:
