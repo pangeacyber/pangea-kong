@@ -54,6 +54,7 @@ class Rule:
         self.allow_failure = rule.get("allow_on_error", False)
 
     def match(self, host, endpoint, port, protocol, prefix) -> bool:
+        # TODO: Should we check for empty hosts?
         if host != self.host:
             return False
         if self.endpoint and endpoint != self.endpoint:
@@ -79,10 +80,10 @@ class Rule:
 class PangeaKongConfig:
     def __init__(self, j: dict):
         self.domain = j.get("pangea_domain")
-        self.insecure = j.get("insecure", False)
-        self.header_recipe_map = j.get("headers", {})
         if not self.domain:
             self.domain = DEFAULT_PANGEA_DOMAIN
+        self.insecure = j.get("insecure", False)
+        self.header_recipe_map = j.get("headers", {})
         rules = j.get("rules", [])
         self.rules: t.List[Rule] = []
         for i, rule in enumerate(rules):
@@ -145,9 +146,8 @@ default_config = {
   "pangea_domain": DEFAULT_PANGEA_DOMAIN,
   "rules": [
     {
-      "host": "api.openai.com",
+      "host": "localhost",
       "endpoint": "/v1/chat/completions",
-      # "prefix": "/a_prefix",
       "allow_on_error": False,
       "protocols": ["https"],
       "ports": ["443"],

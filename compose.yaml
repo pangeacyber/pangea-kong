@@ -19,9 +19,9 @@ services:
       KONG_DATABASE: "off"
 
       # For OpenAI testing
-      KONG_DECLARATIVE_CONFIG_STRING: '{"_format_version":"1.1", "services":[{"name":"test_service_openai","host":"api.openai.com","port":443,"protocol":"https", "routes":[{"name":"openairoutes","paths":["/chatgpt/user", "/chatgpt/dev"]}]}],"plugins":[{"name":"pangea_kong"}]}'
+      KONG_DECLARATIVE_CONFIG_STRING: '{"_format_version":"3.0", "services":[{"name":"test_service_openai","host":"api.openai.com","port":443,"protocol":"https", "routes":[{"name":"openairoutes","paths":["/chatgpt/user", "/chatgpt/dev"]}]}],"plugins":[{"name":"pangea_kong"}]}'
       # For local testing with a service running on host.docker.internal
-      # KONG_DECLARATIVE_CONFIG_STRING: '{"_format_version":"1.1", "services":[{"name":"test_service_local","host":"host.docker.internal","port":8080,"protocol":"http", "routes":[{"name":"openairoutes","paths":["/chatgpt/user", "/chatgpt/dev"]}]}],"plugins":[{"name":"pangea_kong"}]}'
+      # KONG_DECLARATIVE_CONFIG_STRING: '{"_format_version":"3.0", "services":[{"name":"test_service_local","host":"host.docker.internal","port":8080,"protocol":"http", "routes":[{"name":"openairoutes","paths":["/chatgpt/user", "/chatgpt/dev"]}]}],"plugins":[{"name":"pangea_kong"}]}'
 
       # KONG_LOG_LEVEL: info
     secrets:
