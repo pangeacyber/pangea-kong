@@ -12,7 +12,8 @@ from pangea import PangeaConfig
 from pangea.services.ai_guard import AIGuard
 from pangea_translator import get_translator
 
-token = os.getenv("PANGEA_AI_GUARD_TOKEN", "")
+token_secret = os.getenv("PANGEA_AI_GUARD_TOKEN", "")
+with open(token_secret) as f: token = f.read()
 
 Schema = (
     {"message": {"type": "string"}},
