@@ -59,7 +59,7 @@ class Rule:
         if not svc:
             return None
         info = svc.get(op, {}).get("parameters")
-        if info is None or not info.get("enabled", True):
+        if info is None or info.get("enabled", True) is not True:
             return None
         return Operation(info)
 
@@ -178,10 +178,12 @@ class Plugin:
                 return
             allow_failure = rule.allow_failure is True
             op = rule.operation_params("request")
+            k.log.debug(f"Rule op: {json.dumps(op.json)}")
             if op is None:
                 k.log.debug(f"No work for 'request', allowing")
                 return
 
+            k.log.debug(f"Request headers: {k.request.get_headers()}")
             # recipe is in the config, but can be overridden by this header
             recipe = k.request.get_header("x-pangea-aig-recipe")
             if recipe and recipe[0]:
@@ -190,15 +192,15 @@ class Plugin:
             else:
                 recipe = None
             # can be further overridden by the configured header/recipe map
-            for header_name, recipe_map in config.header_recipe_map.items():
-                header_name = header_name.lower()
-                header = k.request.get_header(header_name)
-                if not header:
-                    continue
-                else:
-                    header = header[0]
-                if header in recipe_map:
-                    recipe = recipe_map[header]
+            # for header_name, recipe_map in config.header_recipe_map.items():
+            #     header_name = header_name.lower()
+            #     header = k.request.get_header(header_name)
+            #     if not header:
+            #         continue
+            #     else:
+            #         header = header[0]
+            #     if header in recipe_map:
+            #         recipe = recipe_map[header]
             if recipe:
                 op.json["recipe"] = recipe
 
@@ -215,8 +217,8 @@ class Plugin:
                 if isinstance(text, bytes):
                     text = text.decode("utf8")
                 payload = json.loads(text)
+                k.log.debug(f"PARAMS: {json.dumps(op.json)}")
                 if rule.parser:
-                    k.log.debug(f"PARAMS: {json.dumps(op.json)}")
                     translator = get_translator(payload, llm_hint=rule.parser)
                     model, model_version = translator.get_model_and_version()
                     if not model_version:
