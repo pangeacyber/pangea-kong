@@ -117,21 +117,21 @@ This means that the secret called `pangea_ai_guard_token_secret` will point to t
 
 ```json
 {
-  "pangea_domain": string,      # Pangea Domain got from Pangea Console
-  "insecure": string,           # set to false to use http conections
+  "pangea_domain": "aws.us.pangea.cloud",   // Pangea Domain got from Pangea Console
+  "insecure": true,                         // Set to true to use http conections
   "rules": [
     {
-      "host": string,           # host that send the request to Kong AI gateway
-      "endpoint": string,       # Kong AI gateway endpoint used to send the request
-      "prefix": string,         # Kong AI gateway endpoint prefix. It will be removed from the endpoint
-      "protocols": array,       # List of string with protocols allowed
-      "ports": array,           # List of string with ports allowed 
-      "allow_on_error": bool,   # Whether or not request will reach the LLM in case AI Guard request fails
-      "parser": string,         # Parser name used to translate the LLM request to Pangea AI guard format. i.e.: 'openai'
+      "host": "localhost",                  // Host that send the request to Kong AI gateway
+      "endpoint": "/v1/chat/completions",   // Kong AI gateway endpoint used to send the request
+      "prefix": "/dev",                     // Kong AI gateway endpoint prefix. It will be removed from the endpoint
+      "protocols": ["http"],                // List of string with protocols allowed
+      "ports": ["8000"],                    // List of string with ports allowed 
+      "allow_on_error": false,              // Whether or not request will reach the LLM in case AI Guard request fails
+      "parser": "openai",                   // Parser name used to translate the LLM request to Pangea AI guard format. i.e.: 'openai'
       "ai_guard": {
-        "request": {            # Pangea AI Guard default parameters
+        "request": {                        // Pangea AI Guard default parameters
           "parameters": {
-            "recipe": string    # Pangea AI Guard recipe
+            "recipe": "pangea_kong"         // Pangea AI Guard recipe
           }
         }
       }
