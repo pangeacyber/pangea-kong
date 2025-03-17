@@ -115,10 +115,10 @@ class PangeaKongConfig:
 
 def load_config():
     loc = os.getenv("PANGEA_KONG_CONFIG_FILE")
-    if not loc:
-        pth = pathlib.Path(__file__).parent / "pangea_kong_config.json"
-    else:
+    if loc:
         pth = pathlib.Path(loc)
+    else:
+        pth = pathlib.Path("/etc/pangea_kong_config.json")
     if pth.exists():
         json_config = json.load(open(pth))
         return PangeaKongConfig(json_config)
