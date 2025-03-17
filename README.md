@@ -115,7 +115,7 @@ This means that the secret called `pangea_ai_guard_token_secret` will point to t
 
 ### Pangea Plugin Config File
 
-```json
+```jsonc
 {
   "pangea_domain": "aws.us.pangea.cloud",   // Pangea Domain got from Pangea Console
   "insecure": true,                         // Set to true to use http conections
