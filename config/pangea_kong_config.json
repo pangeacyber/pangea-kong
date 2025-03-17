@@ -29,7 +29,7 @@
       "ai_guard": {
         "request": {
           "parameters": {
-            "recipe": "pangea_prompt_guard_clone"
+            "recipe": "pangea_prompt_guard"
           }
         }
       }

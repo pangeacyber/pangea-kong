@@ -87,12 +87,14 @@ class PangeaKongConfig:
         self.rules: t.List[Rule] = []
         for i, rule in enumerate(rules):
             if not rule.get("host"):
-                kong.kong.log.warn(f"Rule {i} is missing the host which is required. Ignoring rule")
+                # FIXME: Logger is not initialized yet
+                # kong.kong.log.warn(f"Rule {i} is missing the host which is required. Ignoring rule")
                 continue
             endpoint = rule.get("endpoint")
             prefix = rule.get("prefix")
             if not endpoint or not prefix:
-                kong.kong.log.warn(f"Rule {i} is missing the endpoint or forwarding prefix, at least one is required. Ignoring rule")
+                # FIXME: Logger is not initialized yet
+                # kong.kong.log.warn(f"Rule {i} is missing the endpoint or forwarding prefix, at least one is required. Ignoring rule")
                 continue
             self.rules.append(Rule(rule))
 
@@ -124,17 +126,18 @@ class PangeaKongConfig:
 
         return None
 
-def load_config():
+
+def load_config() -> PangeaKongConfig:
+    # FIXME: Check how to log file information. kong.log is not initialized yet
     loc = os.getenv("PANGEA_KONG_CONFIG_FILE")
     if loc:
         pth = pathlib.Path(loc)
     else:
         pth = pathlib.Path("/etc/pangea_kong_config.json")
-    if pth.exists():
+    if pth.is_file():
         json_config = json.load(open(pth))
         return PangeaKongConfig(json_config)
     else:
-        kong.kong.log.warn(f"No config provided, using default")
         return PangeaKongConfig(default_config)
 
 
