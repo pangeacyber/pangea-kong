@@ -20,7 +20,7 @@ token = os.getenv("PANGEA_AI_GUARD_TOKEN")
 token_secret = os.getenv("PANGEA_AI_GUARD_TOKEN_SECRET")
 if not token and token_secret:
     with open(token_secret) as f:
-        os.environ['PANGEA_AI_GUARD_TOKEN'] = f.read()
+        os.environ['PANGEA_AI_GUARD_TOKEN'] = f.readline().strip()
         token = os.getenv("PANGEA_AI_GUARD_TOKEN")
 
 if not token:
