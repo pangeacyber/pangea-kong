@@ -1,5 +1,5 @@
 {
-  "pangea_domain": "dev.aws.pangea.cloud",
+  "pangea_domain": "aws.us.pangea.cloud",
   "insecure": false,
   "rules": [
     {
