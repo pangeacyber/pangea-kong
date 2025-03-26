@@ -4,8 +4,6 @@ services:
     image: pangea_kong_plugin
     volumes:
       - ./config/pangea_kong_config.json:/etc/pangea_kong_config.json
-    networks:
-      - kong-net
     ports:
       - "8010:8000"
       - "8011:8001"
@@ -26,10 +24,6 @@ services:
       # KONG_LOG_LEVEL: info
     secrets:
       - pangea_ai_guard_token_secret
-
-networks:
-  kong-net:
-    external: true
 
 secrets:
   pangea_ai_guard_token_secret:
