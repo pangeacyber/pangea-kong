@@ -1,13 +1,8 @@
 local Translator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.base"
+local PangeaRoles = require "kong.plugins.pangea-ai-guard.pangea-translator.model"
+
 local OpenAiTranslator = setmetatable({}, { __index = Translator })
 OpenAiTranslator.__index = OpenAiTranslator
-
--- Constants for roles
-local PangeaRoles = {
-    PromptRoleSystem = "system",
-    PromptRoleUser = "user",
-    PromptRoleLlm = "assistant"
-}
 
 -- OpenAI schema definition
 local OPENAI_SCHEMA = {
@@ -105,19 +100,23 @@ local OPENAI_SCHEMA = {
     }
 }
 
+---@diagnostic disable-next-line: duplicate-set-field
 function OpenAiTranslator.new(input)
     local self = setmetatable(Translator.new(input), OpenAiTranslator)
     return self
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function OpenAiTranslator:name()
     return "openai"
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function OpenAiTranslator:schema()
     return OPENAI_SCHEMA
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function OpenAiTranslator:get_model_and_version()
     if type(self._input) == "table" and self._input.model then
         return self._input.model, self._input.version
@@ -125,6 +124,7 @@ function OpenAiTranslator:get_model_and_version()
     return self:name(), nil
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function OpenAiTranslator:get_pangea_messages()
   local messages = self._input.messages
   if type(self._input) ~= "table" then
