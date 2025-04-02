@@ -1,0 +1,34 @@
+{
+  "pangea_domain": "aws.us.pangea.cloud",
+  "insecure": false,
+  "rules": [
+    {
+      "host": "localhost",
+      "endpoint": "/v1/chat/completions",
+      "prefix": "/chatgpt/dev",
+      "allow_on_error": true,
+      "parser": "openai",
+      "ai_guard": {
+        "request": {
+          "parameters": {
+            "recipe": "pangea_prompt_guard"
+          }
+        }
+      }
+    },
+    {
+      "host": "localhost",
+      "endpoint": "/v1/chat/completions",
+      "prefix": "/chatgpt/user",
+      "allow_on_error": false,
+      "parser": "openai",
+      "ai_guard": {
+        "request": {
+          "parameters": {
+            "recipe": "pangea_prompt_guard"
+          }
+        }
+      }
+    }
+  ]
+}
