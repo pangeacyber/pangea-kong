@@ -2,7 +2,7 @@ _format_version: "3.0"
 _transform: true
 
 services:
-- name: test_service_openai
+- name: service_openai
   host: api.openai.com
   port: 443
   protocol: https
@@ -12,18 +12,7 @@ services:
           - /chatgpt/user
           - /chatgpt/dev
 
-- name: test_service_claude
-  host: claude.ai
-  port: 443
-  protocol: https
-  routes:
-    - name: clauderoutes
-      paths:
-        - /claude/user
-        - /claude/dev
-
-
-- name: test_service_cohere
+- name: service_cohere
   host: api.cohere.ai
   port: 443
   protocol: https
@@ -32,14 +21,6 @@ services:
       paths:
         - /cohere/user
         - /cohere/dev
-
-- name: test_service_bedrock
-  url: https://bedrock-runtime.us-west-2.amazonaws.com
-  routes:
-    - name: bedrockroutes
-      paths:
-        - /bedrock/user
-        - /bedrock/dev
 
 plugins:
   - name: pangea-ai-guard

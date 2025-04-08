@@ -57,34 +57,6 @@
           }
         }
       }
-    },
-    {
-      "host": "localhost",
-      "endpoint": "/v1/messages",
-      "prefix": "/claude/dev",
-      "allow_on_error": true,
-      "parser": "claude",
-      "ai_guard": {
-        "request": {
-          "parameters": {
-            "recipe": "pangea_prompt_guard"
-          }
-        }
-      }
-    },
-    {
-      "host": "localhost",
-      "endpoint": "/v1/messages",
-      "prefix": "/claude/user",
-      "allow_on_error": false,
-      "parser": "claude",
-      "ai_guard": {
-        "request": {
-          "parameters": {
-            "recipe": "pangea_prompt_guard"
-          }
-        }
-      }
     }
   ]
 }
