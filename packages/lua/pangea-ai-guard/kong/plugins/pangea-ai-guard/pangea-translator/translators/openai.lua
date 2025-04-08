@@ -107,12 +107,12 @@ function OpenAiTranslator.new(input)
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function OpenAiTranslator:name()
+function OpenAiTranslator.name()
   return "openai"
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function OpenAiTranslator:schema()
+function OpenAiTranslator.schema()
   return OPENAI_SCHEMA
 end
 

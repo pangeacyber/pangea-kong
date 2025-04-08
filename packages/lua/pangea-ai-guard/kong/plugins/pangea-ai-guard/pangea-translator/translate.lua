@@ -2,7 +2,7 @@ local cjson = require "cjson"
 local OpenAiTranslator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.openai"
 local PlainTextTranslator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.plaintext"
 local CohereTranslator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.cohere"
-
+local AzureTranslator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.azureai"
 local function get_translator_str_input(input)
     return PlainTextTranslator.new(input)
 end
@@ -59,6 +59,13 @@ local function get_translator_with_hint(input, llm_hint)
         end
         kong.log.warn("Not " .. llm_hint .. ": " .. err)
         return nil
+    elseif provider == "azureai" then
+        local success, err = validate_schema(input, AzureTranslator.schema())
+        if success then
+            return AzureTranslator.new(input)
+        end
+        kong.log.warn("Not " .. llm_hint .. ": " .. err)
+        return nil
     end
 
     kong.log.warn(llm_hint .. " not supported")
@@ -78,6 +85,18 @@ local function get_translator(input, llm_hint)
     local success, err = validate_schema(input, OpenAiTranslator.schema())
     if success then
         return OpenAiTranslator.new(input)
+    end
+
+    -- Try Azure format
+    local success, err = validate_schema(input, AzureTranslator.schema())
+    if success then
+        return AzureTranslator.new(input)
+    end
+
+    -- Try Cohere format
+    local success, err = validate_schema(input, CohereTranslator.schema())
+    if success then
+        return CohereTranslator.new(input)
     end
 
     -- Default to plain text
