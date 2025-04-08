@@ -1,6 +1,7 @@
 local cjson = require "cjson"
 local OpenAiTranslator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.openai"
 local PlainTextTranslator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.plaintext"
+local CohereTranslator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.cohere"
 
 local function get_translator_str_input(input)
     return PlainTextTranslator.new(input)
@@ -40,12 +41,21 @@ local function get_translator_with_hint(input, llm_hint)
         return nil
     end
 
+    kong.log.debug("get_translator_with_hint. Provider: " .. provider)
+
     if provider == "plaintext" and type(input) == "string" then
         return get_translator_str_input(input)
     elseif provider == "openai" then
         local success, err = validate_schema(input, OpenAiTranslator.schema())
         if success then
             return OpenAiTranslator.new(input)
+        end
+        kong.log.warn("Not " .. llm_hint .. ": " .. err)
+        return nil
+    elseif provider == "cohere" then
+        local success, err = validate_schema(input, CohereTranslator.schema())
+        if success then
+            return CohereTranslator.new(input)
         end
         kong.log.warn("Not " .. llm_hint .. ": " .. err)
         return nil

@@ -4,6 +4,7 @@ services:
     image: kong_ai_guard_lua
     volumes:
       - ./config/pangea_kong_config.json:/etc/pangea_kong_config.json
+      - ./config/kong.yml:/etc/kong/kong.yml
     ports:
       - "8010:8000"
       - "8011:8001"
@@ -13,12 +14,8 @@ services:
       PANGEA_AI_GUARD_TOKEN: ${PANGEA_AI_GUARD_TOKEN}
       PANGEA_KONG_CONFIG_FILE: /etc/pangea_kong_config.json
 
-      # Disable DB so it need to set KONG_DECLARATIVE_CONFIG_STRING
+      # Disable database and use declarative config
       KONG_DATABASE: "off"
-
-      # For OpenAI testing
-      KONG_DECLARATIVE_CONFIG_STRING: '{"_format_version":"3.0", "services":[{"name":"test_service_openai","host":"api.openai.com","port":443,"protocol":"https", "routes":[{"name":"openairoutes","paths":["/chatgpt/user", "/chatgpt/dev"]}]}],"plugins":[{"name":"pangea-ai-guard"}]}'
-      # For local testing with a service running on host.docker.internal
-      # KONG_DECLARATIVE_CONFIG_STRING: '{"_format_version":"3.0", "services":[{"name":"test_service_local","host":"host.docker.internal","port":8080,"protocol":"http", "routes":[{"name":"openairoutes","paths":["/chatgpt/user", "/chatgpt/dev"]}]}],"plugins":[{"name":"pangea_kong"}]}'
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
 
       KONG_LOG_LEVEL: debug
