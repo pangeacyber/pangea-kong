@@ -22,5 +22,13 @@ services:
         - /cohere/user
         - /cohere/dev
 
+- name: service_azure
+  url: https://KongTest.openai.azure.com/
+  routes:
+    - name: azureroutes
+      paths:
+        - /azure/user
+        - /azure/dev
+
 plugins:
   - name: pangea-ai-guard

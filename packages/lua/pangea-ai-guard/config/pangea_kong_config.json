@@ -57,6 +57,34 @@
           }
         }
       }
+    },
+    {
+      "host": "localhost",
+      "endpoint": "/openai/deployments/gpt-4o-mini/chat/completions",
+      "prefix": "/azure/dev",
+      "allow_on_error": true,
+      "parser": "azureai",
+      "ai_guard": {
+        "request": {
+          "parameters": {
+            "recipe": "pangea_prompt_guard"
+          }
+        }
+      }
+    },
+    {
+      "host": "localhost",
+      "endpoint": "/openai/deployments/gpt-4o-mini/chat/completions",
+      "prefix": "/azure/user",
+      "allow_on_error": false,
+      "parser": "azureai",
+      "ai_guard": {
+        "request": {
+          "parameters": {
+            "recipe": "pangea_prompt_guard"
+          }
+        }
+      }
     }
   ]
 }
