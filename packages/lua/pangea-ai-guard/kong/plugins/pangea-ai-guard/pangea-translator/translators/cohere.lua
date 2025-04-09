@@ -88,13 +88,13 @@ end
 
 -- Get translator name
 ---@diagnostic disable-next-line: duplicate-set-field
-function CohereTranslator.name()
+function CohereTranslator:name()
   return "cohere"
 end
 
 -- Get schema
 ---@diagnostic disable-next-line: duplicate-set-field
-function CohereTranslator.schema()
+function CohereTranslator:schema()
   return COHERE_SCHEMA
 end
 

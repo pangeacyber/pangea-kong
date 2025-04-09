@@ -46,21 +46,21 @@ local function get_translator_with_hint(input, llm_hint)
     if provider == "plaintext" and type(input) == "string" then
         return get_translator_str_input(input)
     elseif provider == "openai" then
-        local success, err = validate_schema(input, OpenAiTranslator.schema())
+        local success, err = validate_schema(input, OpenAiTranslator:schema())
         if success then
             return OpenAiTranslator.new(input)
         end
         kong.log.warn("Not " .. llm_hint .. ": " .. err)
         return nil
     elseif provider == "cohere" then
-        local success, err = validate_schema(input, CohereTranslator.schema())
+        local success, err = validate_schema(input, CohereTranslator:schema())
         if success then
             return CohereTranslator.new(input)
         end
         kong.log.warn("Not " .. llm_hint .. ": " .. err)
         return nil
     elseif provider == "azureai" then
-        local success, err = validate_schema(input, AzureTranslator.schema())
+        local success, err = validate_schema(input, AzureTranslator:schema())
         if success then
             return AzureTranslator.new(input)
         end
@@ -82,19 +82,19 @@ local function get_translator(input, llm_hint)
     end
 
     -- Try OpenAI format
-    local success, err = validate_schema(input, OpenAiTranslator.schema())
+    local success, err = validate_schema(input, OpenAiTranslator:schema())
     if success then
         return OpenAiTranslator.new(input)
     end
 
     -- Try Azure format
-    local success, err = validate_schema(input, AzureTranslator.schema())
+    local success, err = validate_schema(input, AzureTranslator:schema())
     if success then
         return AzureTranslator.new(input)
     end
 
     -- Try Cohere format
-    local success, err = validate_schema(input, CohereTranslator.schema())
+    local success, err = validate_schema(input, CohereTranslator:schema())
     if success then
         return CohereTranslator.new(input)
     end

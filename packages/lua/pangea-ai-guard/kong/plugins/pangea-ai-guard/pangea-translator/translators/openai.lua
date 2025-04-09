@@ -1,5 +1,5 @@
 local Translator = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.base"
-local PangeaRoles = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.model"
+local Model = require "kong.plugins.pangea-ai-guard.pangea-translator.translators.model"
 
 local OpenAiTranslator = setmetatable({}, { __index = Translator })
 OpenAiTranslator.__index = OpenAiTranslator
@@ -107,12 +107,12 @@ function OpenAiTranslator.new(input)
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function OpenAiTranslator.name()
+function OpenAiTranslator:name()
   return "openai"
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function OpenAiTranslator.schema()
+function OpenAiTranslator:schema()
   return OPENAI_SCHEMA
 end
 
@@ -143,14 +143,15 @@ function OpenAiTranslator:get_pangea_messages()
   local prefix_path = "$"
 
   local msg_count = 1
+
   for idx, prompt in ipairs(messages) do
     local role = prompt.role
     if role == "developer" or role == "system" then
-      role = PangeaRoles.PromptRoleSystem
+      role = Model.PangeaRoles.PromptRoleSystem
     elseif role == "user" then
-      role = PangeaRoles.PromptRoleUser
+      role = Model.PangeaRoles.PromptRoleUser
     elseif role == "assistant" then
-      role = PangeaRoles.PromptRoleLlm
+      role = Model.PangeaRoles.PromptRoleLlm
     end
 
     local content = prompt.content
