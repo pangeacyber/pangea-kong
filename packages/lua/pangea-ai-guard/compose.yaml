@@ -4,7 +4,7 @@ services:
     image: kong_ai_guard_lua
     volumes:
       - ./config/pangea_kong_config.json:/etc/pangea_kong_config.json
-      - ./config/kong.yml:/etc/kong/kong.yml
+      - ./config/kong.yaml:/etc/kong/kong.yaml
     ports:
       - "8010:8000"
       - "8011:8001"
@@ -16,6 +16,6 @@ services:
 
       # Disable database and use declarative config
       KONG_DATABASE: "off"
-      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yaml
 
       KONG_LOG_LEVEL: debug
