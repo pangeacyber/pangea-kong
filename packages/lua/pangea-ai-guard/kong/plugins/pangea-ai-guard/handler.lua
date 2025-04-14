@@ -270,7 +270,7 @@ function PangeaAIGuardHandler:access()
     local new_prompt = response.result.prompt_text or response.result.prompt_messages
     kong.log.debug("PangeaPlugin: PangeaAIGuardHandler:access", "new_prompt: ", cjson.encode(new_prompt))
 
-    if response.result.blocked then
+    if response.result.blocked and not allow_failure then
         for name, result in pairs(response.result.detectors) do
             if result.detected then
                 kong.log.warn("Detected unwanted prompt characteristics: ", name, " ", cjson.encode(response))
