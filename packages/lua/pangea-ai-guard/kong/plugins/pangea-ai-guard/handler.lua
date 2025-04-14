@@ -184,8 +184,8 @@ function PangeaAIGuardHandler:access()
 
     -- Get recipe from header or config
     local recipe = kong.request.get_header("x-pangea-aig-recipe")
-    if recipe and recipe[1] then
-        op.recipe = recipe[1]
+    if recipe then
+        op.recipe = recipe
     end
 
     -- Get request body
