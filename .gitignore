@@ -1,2 +1,3 @@
 .env
 secrets/pangea_ai_guard_token.txt
+__pycache__/

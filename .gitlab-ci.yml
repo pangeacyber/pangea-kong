@@ -1,0 +1,54 @@
+default:
+  image: python:3.9.20@sha256:ef79f8314118b7cde6910d35f4166c902e7f87f47086686256556b97d991a0fb
+  tags:
+    - pangea-internal
+
+stages:
+  - build
+  - run
+  - tests
+
+build_kong:
+  stage: build
+  image: docker:25.0.3
+  before_script:
+    - sleep 30
+    - cd packages/lua/pangea-ai-guard
+  script:
+    - docker build . --tag kong_ai_guard_lua
+  artifacts:
+    paths:
+      - packages/lua/pangea-ai-guard
+    expire_in: 1 hour
+  when: manual
+  allow_failure: false
+
+run_plugin:
+  stage: run
+  image: docker:25.0.3
+  before_script:
+    - sleep 30
+    - cd tests/lua/pangea-ai-guard
+  script:
+    - docker compose down -v || true
+    - docker compose up -d
+  needs:
+    - build_kong
+  # after_script:
+  #   - docker-compose -f compose.yaml down -v
+
+tests:
+  stage: tests
+  before_script:
+    - pip install --upgrade pip
+    - pip --version
+    - pip install --upgrade poetry
+    - poetry --version
+    - poetry check
+    - poetry install
+    - cd tests/lua/pangea-ai-guard
+  script:
+    # - sleep 10  # Wait for Kong to be ready
+    - poetry run pytest tests/ -v -s
+  needs:
+    - run_plugin

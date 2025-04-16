@@ -1,0 +1,34 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+- name: service_openai
+  host: api.openai.com
+  port: 443
+  protocol: https
+  routes:
+    - name: openairoutes
+      paths:
+          - /chatgpt/user
+          - /chatgpt/dev
+
+- name: service_cohere
+  host: api.cohere.ai
+  port: 443
+  protocol: https
+  routes:
+    - name: cohereroutes
+      paths:
+        - /cohere/user
+        - /cohere/dev
+
+- name: service_azure
+  url: https://KongTest.openai.azure.com/
+  routes:
+    - name: azureroutes
+      paths:
+        - /azure/user
+        - /azure/dev
+
+plugins:
+  - name: pangea-ai-guard
