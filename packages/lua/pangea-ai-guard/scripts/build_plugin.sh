@@ -1,1 +1,0 @@
-docker build . --tag kong_ai_guard_lua
