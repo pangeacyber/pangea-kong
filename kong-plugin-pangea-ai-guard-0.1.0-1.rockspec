@@ -22,7 +22,7 @@ description = {
 	license = "MIT",
 }
 
-dependences = {
+dependencies = {
 	"lua >= 5.1",
 }
 
