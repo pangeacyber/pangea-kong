@@ -1,7 +1,7 @@
 local package_version = "0.1.0"
 local rockspec_revision = "1"
 
-package = "kong-pangea-ai-guard"
+package = "kong-plugin-pangea-ai-guard"
 version = package_version .. "-" .. rockspec_revision
 source = {
 	url = "git+ssh://git@github.com/pangeacyber/pangea-kong.git",
@@ -11,7 +11,7 @@ source = {
 description = {
 	summary = "Kong Gateway plugin to integrate Pangea AI Guard",
 	detailed = [[
-		kong-pangea-ai-guard is able to pass proxied LLM requests to Pangea AI Guard.
+		kong-plugin-pangea-ai-guard is able to pass proxied LLM requests to Pangea AI Guard.
 		Depending on the configuration, it can process both the request and response bodies
 		to / from the LLM. It will respect the AI Guard when determing which actions to take,
 		meaning it may decide to completely block any content, or it may redact content before

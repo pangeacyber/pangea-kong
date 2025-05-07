@@ -129,7 +129,7 @@ local schema = {
 						request_recipe = {
 							type = "string",
 							required = false,
-							description = "Reciple to run AI Guard on input before reaching the LLM",
+							description = "Recipe to run AI Guard on input before reaching the LLM",
 							default = ngx.null,
 						},
 					},
@@ -137,7 +137,7 @@ local schema = {
 						response_recipe = {
 							type = "string",
 							required = false,
-							description = "Recipe on to run AI Guard on output of LLM response before returning to client",
+							description = "Recipe to use when running AI Guard on the LLM response output",
 							default = ngx.null,
 						},
 					},
