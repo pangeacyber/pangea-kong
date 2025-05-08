@@ -56,7 +56,7 @@ local function prepare_chat_completions_response(response)
 		role = role_transform[role] or role
 
 		if content then
-			ret:add_message(content, role, { "choices", idx, "messages", "content" })
+			ret:add_message(content, role, { "choices", idx, "message", "content" })
 		end
 	end
 

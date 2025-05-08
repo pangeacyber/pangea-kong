@@ -59,7 +59,11 @@ end
 -- TODO: I think this is a bit funky, but it's the most straight forward way I found to
 -- keep my type-checker happy
 function NewJSONMessageMap()
-	local self = setmetatable({}, { __index = JSONMessageMap })
+	local self = {
+		messages = {},
+		lookup = {},
+	}
+	setmetatable(self, { __index = JSONMessageMap })
 	return self
 end
 
