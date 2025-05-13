@@ -117,79 +117,35 @@ return {
 			},
 		},
 	},
-	-- {
-	-- 	provider = "bedrock",
-	-- 	api = "converse",
-	-- 	type = "request",
-	--
-	-- 	body = {
-	-- 		system = {
-	-- 			{ text = "System Message 1" },
-	-- 			{ text = "System Message 2" },
-	-- 		},
-	-- 		messages = {
-	-- 			{
-	-- 				role = "user",
-	-- 				content = {
-	-- 					{ text = "User Message 1" },
-	-- 					{ text = "User Message 2" },
-	-- 				},
-	-- 			},
-	-- 			{
-	-- 				role = "assistant",
-	-- 				content = {
-	-- 					{ text = "Assistant Message 1" },
-	-- 				},
-	-- 			},
-	-- 		},
-	-- 	},
-	-- 	transformed_body = {
-	-- 		system = {
-	-- 			{ text = "Transformed System Message 1" },
-	-- 			{ text = "Transformed System Message 2" },
-	-- 		},
-	-- 		messages = {
-	-- 			{
-	-- 				role = "user",
-	-- 				content = {
-	-- 					{ text = "Transformed User Message 1" },
-	-- 					{ text = "Transformed User Message 2" },
-	-- 				},
-	-- 			},
-	-- 			{
-	-- 				role = "assistant",
-	-- 				content = {
-	-- 					{ text = "Transformed Assistant Message 1" },
-	-- 				},
-	-- 			},
-	-- 		},
-	-- 	},
-	-- },
-	-- {
-	-- 	provider = "bedrock",
-	-- 	api = "converse",
-	-- 	type = "response",
-	-- 	body = {
-	-- 		output = {
-	-- 			{
-	-- 				role = "assistant",
-	-- 				content = {
-	-- 					{ text = "Assistant Message 1" },
-	-- 					{ text = "Assistant Message 2" },
-	-- 				},
-	-- 			},
-	-- 		},
-	-- 	},
-	-- 	transformed_body = {
-	-- 		output = {
-	-- 			{
-	-- 				role = "assistant",
-	-- 				content = {
-	-- 					{ text = "Transformed Assistant Message 1" },
-	-- 					{ text = "Transformed Assistant Message 2" },
-	-- 				},
-	-- 			},
-	-- 		},
-	-- 	},
-	-- },
+	{
+		provider = "anthropic",
+		api = "/v1/messages",
+		type = "request",
+		body = {
+			system = "System Message 1",
+			messages = {
+				{
+					role = "user",
+					content = "User Message 1",
+				},
+				{
+					role = "assistant",
+					content = "Assistant Message 1",
+				},
+			},
+		},
+		transformed_body = {
+			system = "Transformed System Message 1",
+			messages = {
+				{
+					role = "user",
+					content = "Transformed User Message 1",
+				},
+				{
+					role = "assistant",
+					content = "Transformed Assistant Message 1",
+				},
+			},
+		},
+	},
 }

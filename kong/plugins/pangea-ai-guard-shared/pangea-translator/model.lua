@@ -46,14 +46,25 @@ local JSONMessageMap = {
 ---@param content string
 ---@param role string
 ---@param path PathElement[]
-function JSONMessageMap:add_message(content, role, path)
-	-- TODO: Remove the "content" field -- we should be able to pass in the original table and the path instead
-	-- Getting the content from the path instead seems a bit more robust to me
-	table.insert(self.messages, {
-		content = content,
-		role = role,
-	})
-	table.insert(self.lookup, path)
+---@param pos integer?
+function JSONMessageMap:add_message(content, role, path, pos)
+	if pos ~= nil then
+		-- TODO: Remove the "content" field -- we should be able to pass in the original table and the path instead
+		-- Getting the content from the path instead seems a bit more robust to me
+		table.insert(self.messages, pos, {
+			content = content,
+			role = role,
+		})
+		table.insert(self.lookup, pos, path)
+	else
+		-- TODO: Remove the "content" field -- we should be able to pass in the original table and the path instead
+		-- Getting the content from the path instead seems a bit more robust to me
+		table.insert(self.messages, {
+			content = content,
+			role = role,
+		})
+		table.insert(self.lookup, path)
+	end
 end
 
 -- TODO: I think this is a bit funky, but it's the most straight forward way I found to

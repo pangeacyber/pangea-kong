@@ -20,7 +20,7 @@ return {
 			elseif type(system) == "table" then
 				for idx, content in ipairs(system) do
 					if content.type == "text" then
-						ret:add_message(content.text, "system", { "system", idx, "text" })
+						ret:add_message(content.text, "system", { "system", idx, "text" }, 1)
 					end
 				end
 			end
