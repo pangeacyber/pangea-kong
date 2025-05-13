@@ -1,4 +1,4 @@
-local OpenAiTranslator = require("kong.plugins.pangea-ai-guard.pangea-translator.openai")
+local OpenAiTranslator = require("kong.plugins.pangea-ai-guard-shared.pangea-translator.openai")
 
 local KongAIProxyTranslator = {
 	["/llm/v1/chat"] = {

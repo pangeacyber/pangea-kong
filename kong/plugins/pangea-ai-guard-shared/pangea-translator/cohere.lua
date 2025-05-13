@@ -1,4 +1,4 @@
-local OpenAiTranslator = require("kong.plugins.pangea-ai-guard.pangea-translator.openai")
+local OpenAiTranslator = require("kong.plugins.pangea-ai-guard-shared.pangea-translator.openai")
 
 -- The request format is close enough to OpenAI's that we can use it
 -- CohereTranslator.prepare_messages_from_llm_request = OpenAiTranslator.prepare_messages_from_llm_request

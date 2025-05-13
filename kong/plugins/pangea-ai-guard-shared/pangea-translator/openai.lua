@@ -1,4 +1,4 @@
-local Model = require("kong.plugins.pangea-ai-guard.pangea-translator.model")
+local Model = require("kong.plugins.pangea-ai-guard-shared.pangea-translator.model")
 
 local role_transform = {
 	["developer"] = Model.PangeaRoles.PromptRoleSystem,

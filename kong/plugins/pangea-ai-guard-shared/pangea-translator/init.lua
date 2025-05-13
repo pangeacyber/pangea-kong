@@ -50,7 +50,7 @@ end
 ---@return Translator|nil
 ---@return string ...
 function translate.get_translator(provider)
-	local ok, translator = pcall(require, "kong.plugins.pangea-ai-guard.pangea-translator." .. provider)
+	local ok, translator = pcall(require, "kong.plugins.pangea-ai-guard-shared.pangea-translator." .. provider)
 	if not ok then
 		return nil, "Unknown translator '" .. provider .. "'"
 	end

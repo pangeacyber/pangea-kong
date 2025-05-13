@@ -58,7 +58,7 @@ end
 
 -- TODO: I think this is a bit funky, but it's the most straight forward way I found to
 -- keep my type-checker happy
-function NewJSONMessageMap()
+local function NewJSONMessageMap()
 	local self = {
 		messages = {},
 		lookup = {},
