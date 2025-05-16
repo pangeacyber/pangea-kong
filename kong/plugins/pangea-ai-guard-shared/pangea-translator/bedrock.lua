@@ -52,4 +52,11 @@ return {
 		["request"] = prepare_converse_request,
 		["response"] = prepare_converse_response,
 	},
+	-- Might want to reorganize this, or maybe apply this
+	-- per transformer -- for now it's fine here -- we have a hard coded
+	-- exception around this name in the schema validators
+	capabilities = {
+		-- Butting into HMAC signing issues, so we can only really block in this case
+		redaction = false,
+	},
 }

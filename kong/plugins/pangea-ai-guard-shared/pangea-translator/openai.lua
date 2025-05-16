@@ -105,6 +105,8 @@ local function prepare_completions_response(response)
 			ret:add_message(content, "assistant", { "choices", idx, "text" })
 		end
 	end
+
+	return ret
 end
 
 local OpenAiTranslator = {

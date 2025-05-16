@@ -1,4 +1,8 @@
 return {
+	-- Each test case is described like in annotated example below,
+	-- and is designed to the pangea-translate module
+	-- Note that many of the upstream request / response formats are identical
+	-- to OpenAI -- we don't have a separate test case for them in that scenario
 	{
 		-- Name of the provider (Optional, will use the 'name' if not provided)
 		provider = "openai",
@@ -118,6 +122,48 @@ return {
 		},
 	},
 	{
+		provider = "openai",
+		api = "/v1/completions",
+		type = "request",
+		body = {
+			prompt = "User Message 1",
+		},
+		transformed_body = {
+			prompt = "Transformed User Message 1",
+		},
+	},
+	{
+		provider = "openai",
+		api = "/v1/completions",
+		type = "response",
+		body = {
+			object = "text_completion",
+			choices = {
+				{
+					index = 0,
+					text = "Assistant Message 1",
+				},
+				{
+					index = 1,
+					text = "Assistant Message 2",
+				},
+			},
+		},
+		transformed_body = {
+			object = "text_completion",
+			choices = {
+				{
+					index = 0,
+					text = "Transformed Assistant Message 1",
+				},
+				{
+					index = 1,
+					text = "Transformed Assistant Message 2",
+				},
+			},
+		},
+	},
+	{
 		provider = "anthropic",
 		api = "/v1/messages",
 		type = "request",
@@ -144,6 +190,43 @@ return {
 				{
 					role = "assistant",
 					content = "Transformed Assistant Message 1",
+				},
+			},
+		},
+	},
+	{
+		provider = "cohere",
+		api = "/v2/chat",
+		type = "response",
+		body = {
+			message = {
+				content = {
+					{
+						type = "text",
+						role = "assistant",
+						text = "Assistant Message 1",
+					},
+					{
+						type = "text",
+						role = "assistant",
+						text = "Assistant Message 2",
+					},
+				},
+			},
+		},
+		transformed_body = {
+			message = {
+				content = {
+					{
+						type = "text",
+						role = "assistant",
+						text = "Transformed Assistant Message 1",
+					},
+					{
+						type = "text",
+						role = "assistant",
+						text = "Transformed Assistant Message 2",
+					},
 				},
 			},
 		},

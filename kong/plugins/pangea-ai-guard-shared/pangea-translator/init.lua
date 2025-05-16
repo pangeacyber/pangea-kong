@@ -2,13 +2,13 @@ local translate = {}
 
 function translate.list_available_translators()
 	return {
-		"openai",
-		"azureai",
-		"cohere",
 		"anthropic",
-		-- TODO: Rename to google?
+		"azureai",
+		"bedrock",
+		"cohere",
 		"gemini",
 		"kong",
+		"openai",
 	}
 end
 

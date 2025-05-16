@@ -14,6 +14,27 @@ local PangeaAIGuardResponseHandler = {
 	VERSION = "0.1.0",
 }
 
+local function get_ai_proxy_config()
+	-- Manually convert to the kong ai-proxy format here
+	local service = kong.router.get_service()
+	if not service then
+		return nil, "Failed to retrieve current service"
+	end
+
+	-- AFAIK kong.cache:get()'s automatic invalidation doesn't work with plugins?
+	-- We could maybe still just add a TTL here?
+	-- Ultimately, getting another plugin's config seems like something we shouldn't
+	-- be doing, but I really don't see much alternative here
+	local cache_key = kong.db.plugins:cache_key("ai-proxy", nil, service.id, nil)
+	local plugin, err = kong.db.plugins:select_by_cache_key(cache_key)
+	if err ~= nil then
+		kong.log.inspect(err)
+		return nil, err
+	end
+
+	return plugin.config
+end
+
 local function convert_llm_response(config, res)
 	local encoding = res.headers["Content-Encoding"]
 	local raw_body = res.body
@@ -25,28 +46,10 @@ local function convert_llm_response(config, res)
 		return raw_body
 	end
 
-	-- Manually convert to the kong ai-proxy format here
-	local service = kong.router.get_service()
-	if not service then
-		return nil, "Failed to retrieve current service"
+	local conf, err = get_ai_proxy_config()
+	if err ~= nil or not conf then
+		return nil, err
 	end
-
-	local ai_proxy_plugin = nil
-	for plugin, err in kong.db.plugins:each_for_service { id = service.id } do
-		if not plugin then
-			return nil, err
-		end
-		if plugin.name == "ai-proxy" then
-			ai_proxy_plugin = plugin
-		end
-	end
-
-	if ai_proxy_plugin == nil then
-		-- If the language type is "kong", this should be true
-		return nil, "Failed to retrieve ai-proxy config"
-	end
-
-	local conf = ai_proxy_plugin.config
 
 	local kong_ai_driver = require("kong.llm.drivers." .. conf.model.provider)
 	local kong_response_body, err = kong_ai_driver.from_format(raw_body, conf.model, conf.route_type)
@@ -136,7 +139,7 @@ function PangeaAIGuardResponseHandler:access(config)
 
 	local response, err = convert_llm_response(config, res)
 	if err ~= nil then
-		kong.log.debug("Internal server error")
+		kong.log.debug("Internal server error: " .. err)
 		return kong.response.exit(500, { status = "Internal server error" })
 	end
 

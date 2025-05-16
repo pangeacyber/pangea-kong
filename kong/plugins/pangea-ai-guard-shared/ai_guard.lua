@@ -105,6 +105,20 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body, log_fields)
 		return exit_fn(400, message)
 	end
 
+	local capabilities = translator_instance.capabilities or {}
+	kong.log.inspect(capabilities)
+
+	-- By default, we assume we _can_ redact, unless its been explicitly disabled
+	local can_redact = capabilities.redaction
+	if can_redact == nil then
+		can_redact = true
+	end
+
+	if not can_redact then
+		kong.log.debug("Skipping redaction step")
+		return
+	end
+
 	kong.log.debug("Pangea AI Guard: content allowed")
 	-- Now we need to check if anything has been redacted
 	local prompt_messages = response.result.prompt_messages

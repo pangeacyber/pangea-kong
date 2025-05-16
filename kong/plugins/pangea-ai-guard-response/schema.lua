@@ -85,15 +85,17 @@ local schema = {
 								end
 
 								local api_uri_transformers = instance[value.api_uri]
-								if api_uri_transformers ~= nil then
+								if api_uri_transformers ~= nil and value.api_uri ~= "capabilities" then
 									return true
 								end
 
 								local allowed_values = {}
 								local idx = 0
 								for k, _ in pairs(instance) do
-									idx = idx + 1
-									allowed_values[idx] = k
+									if k ~= "capabilities" then
+										idx = idx + 1
+										allowed_values[idx] = k
+									end
 								end
 
 								return nil,
