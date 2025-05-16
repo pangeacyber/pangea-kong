@@ -1,4 +1,4 @@
-local package_version = "0.1.2"
+local package_version = "0.1.3"
 local rockspec_revision = "1"
 
 package = "kong-plugin-pangea-ai-guard-shared"
@@ -31,6 +31,7 @@ build = {
 		-- List of llm modules -- be sure to keep up to date
 		["kong.plugins.pangea-ai-guard-shared.pangea-translator.anthropic"] = "kong/plugins/pangea-ai-guard-shared/pangea-translator/anthropic.lua",
 		["kong.plugins.pangea-ai-guard-shared.pangea-translator.azureai"] = "kong/plugins/pangea-ai-guard-shared/pangea-translator/azureai.lua",
+		["kong.plugins.pangea-ai-guard-shared.pangea-translator.bedrock"] = "kong/plugins/pangea-ai-guard-shared/pangea-translator/bedrock.lua",
 		["kong.plugins.pangea-ai-guard-shared.pangea-translator.cohere"] = "kong/plugins/pangea-ai-guard-shared/pangea-translator/cohere.lua",
 		["kong.plugins.pangea-ai-guard-shared.pangea-translator.gemini"] = "kong/plugins/pangea-ai-guard-shared/pangea-translator/gemini.lua",
 		["kong.plugins.pangea-ai-guard-shared.pangea-translator.kong"] = "kong/plugins/pangea-ai-guard-shared/pangea-translator/kong.lua",
