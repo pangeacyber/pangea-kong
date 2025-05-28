@@ -32,7 +32,7 @@ dependencies = {
 build = {
 	type = "builtin",
 	modules = {
-		["kong.plugins.pangea-ai-guard-request.handler"] = "kong/plugins/pangea-ai-guard-response/handler.lua",
-		["kong.plugins.pangea-ai-guard-request.schema"] = "kong/plugins/pangea-ai-guard-response/schema.lua",
+		["kong.plugins.pangea-ai-guard-response.handler"] = "kong/plugins/pangea-ai-guard-response/handler.lua",
+		["kong.plugins.pangea-ai-guard-response.schema"] = "kong/plugins/pangea-ai-guard-response/schema.lua",
 	},
 }
