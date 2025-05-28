@@ -12,7 +12,7 @@ description = {
 	summary = "Kong Gateway plugin to integrate Pangea AI Guard",
 	detailed = [[
 		kong-plugin-pangea-ai-guard-request is able to pass proxied LLM requests to Pangea AI Guard.
-		It will respect the AI Guard when determing which actions to take, meaning it may decide to
+		It will respect the AI Guard when determining which actions to take, meaning it may decide to
 		completely block any content, or it may redact content before passing it to the consumer.
 		It does not need Kong AI Proxy or Kong AI Gateway to be configured, but it can work in
 		conjunction with it.
