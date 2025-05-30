@@ -5,7 +5,7 @@ local translate = require("kong.plugins.pangea-ai-guard-shared.pangea-translator
 
 local secret = Schema.define {
 	type = "string",
-	referenceable = false,
+	referenceable = true,
 	encrypted = true,
 }
 
