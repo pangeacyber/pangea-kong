@@ -5,7 +5,7 @@ local kong_utils = require("kong.tools.gzip")
 local PangeaAIGuardRequestHandler = {
 	-- Need to run BEFORE ai-proxy
 	PRIORITY = 780,
-	VERSION = "0.1.4",
+	VERSION = "0.1.5",
 }
 
 local function get_raw_body()
