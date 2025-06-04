@@ -11,7 +11,7 @@ local ai_guard = require("kong.plugins.pangea-ai-guard-shared.ai_guard")
 local PangeaAIGuardResponseHandler = {
 	-- Set priority low so that this runs after ai-proxy (and our request handler)
 	PRIORITY = 760,
-	VERSION = "0.1.4",
+	VERSION = "0.1.5",
 }
 
 local function get_ai_proxy_config()
