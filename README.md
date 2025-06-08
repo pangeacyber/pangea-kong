@@ -342,7 +342,7 @@ Kong Gateway then returns a response indicating that the prompt was rejected:
 
 [Back to Contents](#contents)
 
-If the request passes but the model responds with PII or sensitive content, the response plugin applies the configured recipe to redact it.
+If data protection controls fail - due to a successful jailbreak, misalignment, or lack of security boundaries - the response plugin can still mitigate the issue by redacting sensitive data, defanging malicious references, or blocking the response entirely.
 
 In the following example, we simulate a response from a privately hosted LLM that inadvertently includes information that should never be exposed by the AI assistant.
 
