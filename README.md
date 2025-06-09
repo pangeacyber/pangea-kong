@@ -10,17 +10,16 @@ Pangea AI Guard Kong plugins provide AI-layer security for applications by integ
 
 The plugins act as middleware to inspect and sanitize LLM inputs and outputs flowing through the Kong gateways - without modifying your application code.
 
-AI Guard uses configurable detection policies to identify and mitigate risks in AI application traffic, including:
+AI Guard uses configurable detection policies (called recipes) to identify and mitigate risks in AI application traffic, including:
 
-- Prompt injection attacks (with 99%+ efficacy)
-- Misalignment between system instructions and user or assistant messages
-- Malicious links, IPs, and domains
+- Prompt injection attacks (with over 99% efficacy)
 - 50+ types of PII and sensitive content, with support for custom patterns
 - Toxicity, violence, self-harm, and other unwanted content
-- 100+ spoken languages, with allow and deny list controls
+- Malicious links, IPs, and domains
+- 100+ spoken languages, with allowlist and denylist controls
 
-All detections are logged in an immutable audit trail for analysis, attribution, and incident response.
-You can also configure webhooks to trigger alerts based on specific detections.
+All detections are logged in an audit trail for analysis, attribution, and incident response.
+You can also configure webhooks to trigger alerts for specific detection types.
 
 ## Contents
 
