@@ -58,6 +58,11 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body, log_fields)
 		log_fields = log_fields,
 	}
 
+  if #ai_guard_request_body.messages == 0 then
+		kong.log.debug("No messages found, skipping AI Guard")
+    return
+  end
+
 	if config.recipe and config.recipe ~= ngx.null then
 		ai_guard_request_body.recipe = config.recipe
 	end
