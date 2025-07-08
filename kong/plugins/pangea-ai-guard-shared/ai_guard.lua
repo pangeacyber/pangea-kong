@@ -13,8 +13,7 @@ local AIGuard = {}
 ---@param config table plugin config -- response and request plugins share fields
 ---@param mode mode Are we running on a request or a response object
 ---@param raw_original_body string
----@param log_fields table additional log fields for AI Guard API
-function AIGuard.run_ai_guard(config, mode, raw_original_body, log_fields)
+function AIGuard.run_ai_guard(config, mode, raw_original_body)
 	local exit_fn = kong.response.exit
 
 	local original_body, err = cjson.decode(raw_original_body)
@@ -53,14 +52,33 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body, log_fields)
 		return exit_fn(500, internalError)
 	end
 
-	local ai_guard_request_body = {
-		messages = messages.messages,
-		log_fields = log_fields,
-	}
+	-- local ai_guard_request_body = {
+	-- 	messages = messages.messages,
+	-- 	log_fields = log_fields,
+	-- }
 
-  if #ai_guard_request_body.messages == 0 then
+  if #messages.messages == 0 then
 		kong.log.debug("No messages found, skipping AI Guard")
     return
+  end
+
+  ---@type string
+	local url = config.ai_guard_api_url
+
+  local ai_guard_request_body = {}
+
+  if string.sub(url, -(#"text/guard")) == "text/guard" then
+    ai_guard_request_body.messages = messages.messages
+    ai_guard_request_body.log_fields = AIGuard.get_log_fields(config)
+  else
+    -- Assume this is v1beta/guard, or some new version
+    ai_guard_request_body = AIGuard.get_aidr_fields(config)
+    ai_guard_request_body.messages = messages.messages
+    if mode == "request" then
+      ai_guard_request_body.sensor_mode = "input"
+    else
+      ai_guard_request_body.sensor_mode = "output"
+    end
   end
 
 	if config.recipe and config.recipe ~= ngx.null then
@@ -73,7 +91,6 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body, log_fields)
 		return exit_fn(500, internalError)
 	end
 
-	local url = config.ai_guard_api_url
 
 	local httpc = http.new()
 	local res, err = httpc:request_uri(url, {
@@ -190,6 +207,19 @@ function AIGuard.get_log_fields(config)
 		extra_info = cjson.encode(extra_info),
 		source = cjson.encode(source),
 	}
+end
+
+function AIGuard.get_aidr_fields(config)
+  local body = {}
+
+  body.source_ip = kong.client.get_forwarded_ip()
+
+  local service = kong.router.get_service()
+
+  -- body.app_name = service.name .. ":" .. kong.request.get_forwarded_path()
+  body.app_name = service.name
+
+  return body
 end
 
 return AIGuard

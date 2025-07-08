@@ -126,7 +126,7 @@ end
 function PangeaAIGuardResponseHandler:access(config)
 	kong.service.request.enable_buffering()
 
-	kong.ctx.plugin.log_fields = ai_guard.get_log_fields(config)
+	-- kong.ctx.plugin.log_fields = ai_guard.get_log_fields(config)
 	kong.log.debug("Shortcutting by making upstream request in access() phase")
 	local res, err = manual_upstream_request()
 	if err ~= nil or not res then
@@ -147,7 +147,7 @@ function PangeaAIGuardResponseHandler:access(config)
 	res.headers["content-encoding"] = nil
 	res.headers["content-type"] = "application/json"
 
-	local updated_response = ai_guard.run_ai_guard(config, "response", response, kong.ctx.plugin.log_fields)
+	local updated_response = ai_guard.run_ai_guard(config, "response", response)
 	if updated_response ~= nil then
 		response = updated_response
 	end

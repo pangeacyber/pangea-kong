@@ -19,10 +19,10 @@ local function get_raw_body()
 end
 
 function PangeaAIGuardRequestHandler:access(config)
-	local log_fields = ai_guard.get_log_fields(config)
+	-- local log_fields = ai_guard.get_log_fields(config)
 	local raw_body = get_raw_body()
 
-	local new_payload = ai_guard.run_ai_guard(config, "request", raw_body, log_fields)
+	local new_payload = ai_guard.run_ai_guard(config, "request", raw_body)
 	if new_payload ~= nil then
 		kong.service.request.set_raw_body(new_payload)
 	end
