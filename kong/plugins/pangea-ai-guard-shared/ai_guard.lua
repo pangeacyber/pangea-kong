@@ -8,6 +8,7 @@ local internalError = {
 
 local AIGuard = {}
 
+
 ---@alias mode "request" | "response"
 
 ---@param config table plugin config -- response and request plugins share fields
@@ -18,7 +19,6 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body)
 
 	local original_body, err = cjson.decode(raw_original_body)
 	if err then
-		kong.log.inspect(raw_original_body)
 		kong.log.err("Error decoding input body: " .. err)
 		local message = {
 			status = "Failed to decode JSON body",
@@ -64,20 +64,23 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body)
 
   ---@type string
 	local url = config.ai_guard_api_url
+  local aidr = not (string.sub(url, -(#"text/guard")) == "text/guard")
 
   local ai_guard_request_body = {}
 
-  if string.sub(url, -(#"text/guard")) == "text/guard" then
+
+  if not aidr then
     ai_guard_request_body.messages = messages.messages
     ai_guard_request_body.log_fields = AIGuard.get_log_fields(config)
   else
     -- Assume this is v1beta/guard, or some new version
     ai_guard_request_body = AIGuard.get_aidr_fields(config)
-    ai_guard_request_body.messages = messages.messages
+    ai_guard_request_body.input = {}
+    ai_guard_request_body.input.messages = messages.messages
     if mode == "request" then
-      ai_guard_request_body.sensor_mode = "input"
+      ai_guard_request_body.event_type = "input"
     else
-      ai_guard_request_body.sensor_mode = "output"
+      ai_guard_request_body.event_type = "output"
     end
   end
 
@@ -127,8 +130,9 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body)
 		return exit_fn(400, message)
 	end
 
+	kong.log.debug("Pangea AI Guard: content allowed")
+
 	local capabilities = translator_instance.capabilities or {}
-	kong.log.inspect(capabilities)
 
 	-- By default, we assume we _can_ redact, unless its been explicitly disabled
 	local can_redact = capabilities.redaction
@@ -141,11 +145,19 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body)
 		return
 	end
 
-	kong.log.debug("Pangea AI Guard: content allowed")
-	-- Now we need to check if anything has been redacted
-	local prompt_messages = response.result.prompt_messages
-	if #prompt_messages > 0 then
-		local new_payload, updated = translate.rewrite_llm_message(original_body, messages, prompt_messages)
+  if aidr and not response.result.transformed then
+    return
+  end
+
+  local new_messages
+  if aidr then
+    new_messages = response.result.output.messages
+  else
+    new_messages = response.result.prompt_messages
+  end
+
+	if #new_messages > 0 then
+		local new_payload, updated = translate.rewrite_llm_message(original_body, messages, new_messages)
 		if updated then
 			kong.log.debug("Pangea AI Guard: required redaction")
 			local raw_new_payload, err = cjson.encode(new_payload)
@@ -217,7 +229,8 @@ function AIGuard.get_aidr_fields(config)
   local service = kong.router.get_service()
 
   -- body.app_name = service.name .. ":" .. kong.request.get_forwarded_path()
-  body.app_name = service.name
+  body.extra_info = {}
+  body.extra_info.app_name = service.name
 
   return body
 end

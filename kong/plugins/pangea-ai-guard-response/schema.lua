@@ -25,7 +25,7 @@ local schema = {
 						ai_guard_api_url = {
 							type = "string",
 							required = false,
-							default = "https://ai-guard.aws.us.pangea.cloud/v1/text/guard",
+							default = "https://ai-guard.aws.us.pangea.cloud/v1beta/guard",
 							description = "AI Guard API URL",
 						},
 					},
