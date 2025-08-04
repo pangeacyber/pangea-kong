@@ -1,4 +1,4 @@
-local package_version = "0.1.8"
+local package_version = "0.2.0"
 local rockspec_revision = "1"
 
 package = "kong-plugin-pangea-ai-guard-shared"

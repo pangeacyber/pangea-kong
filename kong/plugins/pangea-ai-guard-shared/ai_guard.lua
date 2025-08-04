@@ -63,25 +63,17 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body)
   end
 
   ---@type string
-	local url = config.ai_guard_api_url
-  local aidr = not (string.sub(url, -(#"text/guard")) == "text/guard")
-
+	local url = config.ai_guard_api_base_url .. "/v1beta/guard"
   local ai_guard_request_body = {}
 
-
-  if not aidr then
-    ai_guard_request_body.messages = messages.messages
-    ai_guard_request_body.log_fields = AIGuard.get_log_fields(config)
+  -- Assume this is v1beta/guard, or some new version
+  ai_guard_request_body = AIGuard.get_aidr_fields(config)
+  ai_guard_request_body.input = {}
+  ai_guard_request_body.input.messages = messages.messages
+  if mode == "request" then
+    ai_guard_request_body.event_type = "input"
   else
-    -- Assume this is v1beta/guard, or some new version
-    ai_guard_request_body = AIGuard.get_aidr_fields(config)
-    ai_guard_request_body.input = {}
-    ai_guard_request_body.input.messages = messages.messages
-    if mode == "request" then
-      ai_guard_request_body.event_type = "input"
-    else
-      ai_guard_request_body.event_type = "output"
-    end
+    ai_guard_request_body.event_type = "output"
   end
 
 	if config.recipe and config.recipe ~= ngx.null then
@@ -145,16 +137,11 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body)
 		return
 	end
 
-  if aidr and not response.result.transformed then
+  if not response.result.transformed then
     return
   end
 
-  local new_messages
-  if aidr then
-    new_messages = response.result.output.messages
-  else
-    new_messages = response.result.prompt_messages
-  end
+  local new_messages = response.result.output.messages
 
 	if #new_messages > 0 then
 		local new_payload, updated = translate.rewrite_llm_message(original_body, messages, new_messages)
@@ -168,57 +155,6 @@ function AIGuard.run_ai_guard(config, mode, raw_original_body)
 			return raw_new_payload
 		end
 	end
-end
-
--- Needs to run the access phase
-function AIGuard.get_log_fields(config)
-	-- Dont override? Keep AI Guard default for now
-	-- local citations = {
-	-- 	application = "Kong Gateway",
-	-- }
-
-	local model = {
-		llm_provider = config.upstream_llm.provider,
-	}
-
-	local extra_info = {}
-
-	local service = kong.router.get_service()
-	if service then
-		extra_info.kong_service = service.name
-	end
-	local route = kong.router.get_route()
-	if route then
-		extra_info.kong_route = route.name
-	end
-
-	local consumer = kong.client.get_consumer()
-	if consumer then
-		extra_info.kong_consumer_id = consumer.id
-	end
-
-	local source = {
-		start_time = kong.request.get_start_time(),
-		ip = kong.client.get_ip(),
-		forwarded_for_ip = kong.client.get_forwarded_ip(),
-		method = kong.request.get_method(),
-		scheme = kong.request.get_scheme(),
-		host = kong.request.get_host(),
-		port = kong.request.get_port(),
-		path = kong.request.get_path(),
-		forwarded_scheme = kong.request.get_forwarded_scheme(),
-		forwarded_host = kong.request.get_forwarded_host(),
-		forwarded_port = kong.request.get_forwarded_port(),
-		forwarded_path = kong.request.get_forwarded_path(),
-	}
-
-	return {
-		-- citations = cjson.encode(citations),
-		citations = "ai-guard",
-		model = cjson.encode(model),
-		extra_info = cjson.encode(extra_info),
-		source = cjson.encode(source),
-	}
 end
 
 function AIGuard.get_aidr_fields(config)

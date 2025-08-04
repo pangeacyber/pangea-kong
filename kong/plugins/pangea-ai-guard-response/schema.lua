@@ -22,7 +22,7 @@ local schema = {
 				type = "record",
 				fields = {
 					{
-						ai_guard_api_url = {
+						ai_guard_api_base_url = {
 							type = "string",
 							required = false,
 							default = "https://ai-guard.aws.us.pangea.cloud/v1beta/guard",
@@ -35,28 +35,6 @@ local schema = {
 							description = "Pangea AI Guard API Key",
 						},
 					},
-					-- {
-					-- 	ai_guard_vault_api_reference = {
-					-- 		required = false,
-					-- 		type = "record",
-					-- 		description = "A Pangea Vault Key which contains the AI Guard API Token",
-					-- 		fields = {
-					-- 			{
-					-- 				vault_id = {
-					-- 					type = "string",
-					-- 					required = true,
-					-- 					description = "A Pangea Vault ID containing the AI Guard API Key",
-					-- 				},
-					-- 			},
-					-- 			{
-					-- 				vault_api_key = secret {
-					-- 					required = true,
-					-- 					description = "Pangea vault API Token",
-					-- 				},
-					-- 			},
-					-- 		},
-					-- 	},
-					-- },
 					{
 						upstream_llm = {
 							type = "record",
